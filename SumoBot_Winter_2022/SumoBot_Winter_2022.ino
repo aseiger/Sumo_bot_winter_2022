@@ -23,7 +23,7 @@ int leftEchoPin = 16;
 int rightTriggerPin = 7;
 int rightEchoPin = 8;
 
-const int sensorTimeout = 100U;
+const int sensorTimeout = 100;
 
 SR04 center_sensor(centerTriggerPin, centerEchoPin, sensorTimeout);
 SR04 left_sensor(leftTriggerPin, leftEchoPin, sensorTimeout);
@@ -38,6 +38,8 @@ void setup()
     left_servo.attach(6);  // attaches the servo on pin 9 to the servo object
     right_servo.attach(5);
     set_motors(0, 0);
+
+    delay(4000);
 }
 
 void loop()
@@ -48,6 +50,14 @@ void loop()
     delay(10);
     double right_cm = right_sensor.centimeters();
     delay(10);
+
+    // Serial.print(left_cm);
+    // Serial.print(" ");
+    // Serial.print(center_cm);
+    // Serial.print(" ");
+    // Serial.print(right_cm);
+    // Serial.println("");
+
 
     double angle, magnitude;
     calculate_ultrasonic_vector(left_cm, center_cm, right_cm, angle, magnitude);
@@ -60,13 +70,17 @@ void loop()
 
     if (left_sensor == false && right_sensor == false)
     {
+      int scale_factor;
+
+      scale_factor = abs(angle) * 1.5;
+
       if (angle > 0)
       {
-        set_motors(25, 100);
+        set_motors(100 - scale_factor, 100);
       }
       else
       {
-        set_motors(100, 25);
+        set_motors(100, 100 - scale_factor);
       }
     }
     else
@@ -100,23 +114,26 @@ void get_edge_sensor_status(bool& left_sensor, bool& right_sensor)
 
 void calculate_ultrasonic_vector(double left_cm, double center_cm, double right_cm, double& angle, double& magnitude)
 {
-    double left_sensor_side_magnitude = sqrt(2) * -left_cm;
-    double left_sensor_forward_magnitude = sqrt(2) * left_cm;
+    double left_sensor_side_magnitude = -0.707 * left_cm;
+    double left_sensor_forward_magnitude = 0.707 * left_cm;
 
-    double right_sensor_side_magnitude = sqrt(2) * right_cm;
-    double right_sensor_forward_magnitude = sqrt(2) * right_cm;
+    double right_sensor_side_magnitude = 0.707 * right_cm;
+    double right_sensor_forward_magnitude = 0.707 * right_cm;
 
     double forward_sensor_forward_magnitude = center_cm;
 
-    double forward_cm = (left_sensor_forward_magnitude + right_sensor_forward_magnitude + forward_sensor_forward_magnitude) / 3.0;
+    double forward_cm = (left_sensor_forward_magnitude + right_sensor_forward_magnitude + forward_sensor_forward_magnitude) / 3;
     double side_cm = (left_sensor_side_magnitude + right_sensor_side_magnitude);
-    angle = 180 + (180/atan(forward_cm/side_cm));
+    angle = (180.0 / 3.14159) * atan(side_cm/forward_cm);
     magnitude = sqrt(pow(forward_cm, 2.0) + pow(side_cm, 2.0));
 
 }
 
 void set_motors(int left_val, int right_val)
 {
+  // left_val = 0;
+  // right_val = 0;
+
   int left_raw = map(left_val, -100, 100, left_servo_min, left_servo_max);
   int right_raw = map(right_val, -100, 100, right_servo_min, right_servo_max);
 
