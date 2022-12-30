@@ -64,9 +64,6 @@ void loop()
 
     bool left_sensor, right_sensor;
     get_edge_sensor_status(left_sensor, right_sensor);
-    
-    Serial.print(angle);
-    Serial.println(" ");
 
     if (left_sensor == false && right_sensor == false)
     {
@@ -104,6 +101,10 @@ void get_edge_sensor_status(bool& left_sensor, bool& right_sensor)
 {
     int LeftEdgeSensor = analogRead(A0);
     int RightEdgeSensor = analogRead(A1);
+
+    Serial.print(LeftEdgeSensor);
+    Serial.print(" ");
+    Serial.println(RightEdgeSensor);
 
     if (LeftEdgeSensor > left_edge_sensor_thresh) left_sensor = false;
     else left_sensor = true;
