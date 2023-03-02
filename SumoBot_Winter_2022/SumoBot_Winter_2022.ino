@@ -2,8 +2,8 @@
 #include <Servo.h>
 
 const int servo_scale = 150;
-const int left_servo_zero = 1425;
-const int right_servo_zero = 1370;
+const int left_servo_zero = 1420;
+const int right_servo_zero = 1360;
 
 const int left_servo_min = left_servo_zero - servo_scale;
 const int left_servo_max = left_servo_zero + servo_scale;
@@ -29,8 +29,8 @@ SR04 center_sensor(centerTriggerPin, centerEchoPin, sensorTimeout);
 SR04 left_sensor(leftTriggerPin, leftEchoPin, sensorTimeout);
 SR04 right_sensor(rightTriggerPin, rightEchoPin, sensorTimeout);
 
-const int left_edge_sensor_thresh = 890;
-const int right_edge_sensor_thresh = 890;
+int left_edge_sensor_thresh = 0;
+int right_edge_sensor_thresh = 0;
 
 void setup()
 {
@@ -39,17 +39,27 @@ void setup()
     right_servo.attach(5);
     set_motors(0, 0);
 
-    delay(4000);
+    delay(1000);
+
+    for (int i = 0; i < 10; i++)
+    {
+      left_edge_sensor_thresh += analogRead(A0);
+      right_edge_sensor_thresh += analogRead(A1);
+    }
+
+    left_edge_sensor_thresh = left_edge_sensor_thresh / 10;
+    right_edge_sensor_thresh = right_edge_sensor_thresh / 10;
+
+    left_edge_sensor_thresh += 300;
+    right_edge_sensor_thresh += 300;    
+    delay(3000);
 }
 
 void loop()
 {
     double center_cm = center_sensor.centimeters();
-    delay(10);
     double left_cm = left_sensor.centimeters();
-    delay(10);
     double right_cm = right_sensor.centimeters();
-    delay(10);
 
     // Serial.print(left_cm);
     // Serial.print(" ");
@@ -65,7 +75,7 @@ void loop()
     bool left_sensor, right_sensor;
     get_edge_sensor_status(left_sensor, right_sensor);
 
-    if (left_sensor == false && right_sensor == false)
+    if (left_sensor == true && right_sensor == true)
     {
       int scale_factor;
 
@@ -83,16 +93,16 @@ void loop()
     else
     {
       set_motors(-100, -100);
-      delay(1000);
+      delay(250);
       if (left_sensor == false)
       {
         set_motors(100, -100);
-        delay(700);
+        delay(100);
       }
       else
       {
         set_motors(-100, 100);
-        delay(700);
+        delay(100);
       }
     }
 }
@@ -102,7 +112,12 @@ void get_edge_sensor_status(bool& left_sensor, bool& right_sensor)
     int LeftEdgeSensor = analogRead(A0);
     int RightEdgeSensor = analogRead(A1);
 
+
+    Serial.print(left_edge_sensor_thresh);
+    Serial.print(" ");
     Serial.print(LeftEdgeSensor);
+    Serial.print("     ");
+    Serial.print(right_edge_sensor_thresh);
     Serial.print(" ");
     Serial.println(RightEdgeSensor);
 
