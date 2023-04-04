@@ -48,10 +48,10 @@ void setup()
     }
 
     left_edge_sensor_thresh = left_edge_sensor_thresh / 10;
-    right_edge_sensor_thresh = right_edge_sensor_thresh / 10;
+    right_edge_sensor_thresh = right_edge_sensor_thresh / 10;    
 
-    left_edge_sensor_thresh += 300;
-    right_edge_sensor_thresh += 300;    
+    left_edge_sensor_thresh -= 300;
+    right_edge_sensor_thresh -= 300;    
     delay(3000);
 }
 
@@ -97,12 +97,12 @@ void loop()
       if (left_sensor == false)
       {
         set_motors(100, -100);
-        delay(100);
+        delay(200);
       }
       else
       {
         set_motors(-100, 100);
-        delay(100);
+        delay(200);
       }
     }
 }
@@ -121,10 +121,10 @@ void get_edge_sensor_status(bool& left_sensor, bool& right_sensor)
     Serial.print(" ");
     Serial.println(RightEdgeSensor);
 
-    if (LeftEdgeSensor > left_edge_sensor_thresh) left_sensor = false;
+    if (LeftEdgeSensor < left_edge_sensor_thresh) left_sensor = false;
     else left_sensor = true;
 
-    if (RightEdgeSensor > right_edge_sensor_thresh) right_sensor = false;
+    if (RightEdgeSensor < right_edge_sensor_thresh) right_sensor = false;
     else right_sensor = true;
 }
 
